@@ -1,7 +1,7 @@
-# libxposed module properties
-# Minimum API version (libxposed)
-minApiVersion=101
-# Target API version (libxposed)
-targetApiVersion=101
-# Whether it is a static scope
+# Modern Xposed Module Metadata
+minApiVersion=90
+targetApiVersion=90
 staticScope=true
+# Optional: only if you want to support hot-reloading (API 102+)
+# autoHotReload=false
+

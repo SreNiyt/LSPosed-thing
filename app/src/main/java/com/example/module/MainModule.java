@@ -1,68 +1,53 @@
-package com.example.module;
+import java.util.HashMap;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-
-import io.github.libxposed.api.XposedInterface;
-import io.github.libxposed.api.XposedModule;
-
-/**
- * This is the entry point class for the Xposed module.
- * Customization suggestions:
- * 1. Change the package name `com.example.module` to your own.
- * 2. Add your Hook logic in `onSystemServerStarting`, `onPackageLoaded`, or `onPackageReady`.
- */
-@SuppressLint({"PrivateApi", "BlockedPrivateApi"})
-public class MainModule extends XposedModule {
+public class MainModule implements IXposedHookLoadPackage {
+    // Map to hold your redirect rules: <InternalPath, ExternalPath>
+    private static HashMap<String, String> redirectMap = new HashMap<>();
 
     @Override
-    public void onSystemServerStarting(@NonNull SystemServerStartingParam param) {
-        // Add Hook logic for System Server here
-        // For example:
-        // try {
-        //     var classLoader = param.getClassLoader();
-        //     var clazz = classLoader.loadClass("com.android.server.wm.WindowManagerService");
-        //     var method = clazz.getDeclaredMethod("exampleMethod");
-        //     hook(method).intercept(new ExampleHooker());
-        // } catch (Throwable t) {
-        //     log(android.util.Log.ERROR, "MainModule", "Hook failed", t);
-        // }
+    public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
+        // 1. Load rules from a config file (on boot)
+        loadRedirectRules();
+
+        // 2. Hook File constructor
+        XposedHelpers.findAndHookConstructor(File.class, String.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                String path = (String) param.args[0];
+                
+                // 3. Dynamic Check: Does this path need to be redirected?
+                for (String internalPath : redirectMap.keySet()) {
+                    if (path.startsWith(internalPath)) {
+                        String newPath = path.replace(internalPath, redirectMap.get(internalPath));
+                        param.args[0] = newPath;
+                        return;
+                    }
+                }
+            }
+        });
     }
 
-    @Override
-    public void onPackageLoaded(@NonNull PackageLoadedParam param) {
-        // Called when the default classloader is ready, before AppComponentFactory instantiation.
-        // Note: getClassLoader() is NOT available here. Use onPackageReady() for classloader access.
-        // if (param.getPackageName().equals("com.target.package")) {
-        //     // ...
-        // }
-    }
-
-    @Override
-    public void onPackageReady(@NonNull PackageReadyParam param) {
-        // Called after AppComponentFactory has created the app classloader.
-        // Use param.getClassLoader() here to load and hook target classes.
-        // if (param.getPackageName().equals("com.target.package")) {
-        //     var classLoader = param.getClassLoader();
-        //     // ...
-        // }
-    }
-
-    /**
-     * This is a simple Hooker example using the OkHttp-style interceptor chain.
-     */
-    private static class ExampleHooker implements XposedInterface.Hooker {
-        @Override
-        public Object intercept(@NonNull XposedInterface.Chain chain) throws Throwable {
-            // Logic to execute before method execution
-
-            // Call the next interceptor in the chain (or the original method)
-            Object result = chain.proceed();
-
-            // Logic to execute after method execution
-
-            return result;
-        }
+    private void loadRedirectRules() {
+        // Simple file reader that reads: /internal/path=/external/path
+        try (BufferedReader br = new BufferedReader(new FileReader("/sdcard/redirect_config.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("=");
+                if (parts.length == 2) redirectMap.put(parts[0], parts[1]);
+            }
+        } catch (Exception e) { /* Log error */ }
     }
 }
+public String getExternalSdCardPath() {
+    File[] storageDirs = new File("/storage").listFiles();
+    for (File file : storageDirs) {
+        // Look for the UUID-style folder (not "emulated", not "self")
+        if (file.isDirectory() && !file.getName().equals("emulated") && !file.getName().equals("self")) {
+            return file.getAbsolutePath();
+        }
+    }
+    return null;
+}
+
