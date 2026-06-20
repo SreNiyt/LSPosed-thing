@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build with Gradle
-        run: chmod +x gradlew && ./gradlew assembleDebug
+        run: chmod +x gradlew && ./gradlew clean assembleDebug
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
