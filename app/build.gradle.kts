@@ -43,10 +43,6 @@ android {
 
 dependencies {
     compileOnly("androidx.annotation:annotation:1.9.1")
-    compileOnly("de.robv.android.xposed:api:82")
-    compileOnly("io.github.libxposed:api:latest.release")
-    compileOnly("io.github.lsposed.xposed:api:8.0.0")
-    annotationProcessor("io.github.lsposed.xposed:api:8.0.0")
-    annotationProcessor("org.lsposed.exposed:exposed-api:0.10.0")
-    compileOnly("org.lsposed.exposed:exposed-api:0.10.0")
+    compileOnly("io.github.libxposed:api:101.0.0")
 }
+
