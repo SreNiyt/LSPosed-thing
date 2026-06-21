@@ -43,6 +43,7 @@ android {
 
 dependencies {
     compileOnly("androidx.annotation:annotation:1.9.1")
-    compileOnly("io.github.libxposed:api:101.0.0")
+    // Back to the classic API, matching the Java code
+    compileOnly("de.robv.android.xposed:api:82")
 }
 
