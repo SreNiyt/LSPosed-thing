@@ -43,12 +43,6 @@ android {
 
 dependencies {
     compileOnly("androidx.annotation:annotation:1.9.1")
-
-    // 1. The Modern API (for XposedModule and @RegisterModule)
-    compileOnly("io.github.libxposed:api:100.0.0")
-    annotationProcessor("io.github.libxposed:processor:100.0.0")
-
-    // 2. The Classic API (for XposedHelpers and XC_MethodHook)
     compileOnly("de.robv.android.xposed:api:82")
 }
 

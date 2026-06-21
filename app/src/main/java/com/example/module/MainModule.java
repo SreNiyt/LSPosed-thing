@@ -1,27 +1,21 @@
 package com.example.module;
 
 import android.util.Log;
-import io.github.libxposed.api.XposedModule;
-import io.github.libxposed.api.XposedModuleInterface;
-import io.github.libxposed.api.annotations.RegisterModule;
+import de.robv.android.xposed.IXposedHookLoadPackage;
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedHelpers;
+import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedHelpers;
 
-@RegisterModule
-public class MainModule extends XposedModule {
+public class MainModule implements IXposedHookLoadPackage {
     private static final String TAG = "MyXposedModule";
     private static HashMap<String, String> redirectMap = new HashMap<>();
 
-    public MainModule(XposedModuleInterface.ModuleLoadedParam param) {
-        super(param);
-    }
-
     @Override
-    public void onPackageLoaded(XposedModuleInterface.PackageLoadedParam lpparam) throws Throwable {
+    public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
         Log.i(TAG, "Hooking package: " + lpparam.packageName);
         loadRedirectRules();
 
@@ -44,7 +38,6 @@ public class MainModule extends XposedModule {
     }
 
     private void loadRedirectRules() {
-        // Updated path: /data/local/tmp is safer for sandboxed apps than /sdcard/
         File configFile = new File("/data/local/tmp/redirect_config.txt");
         if (!configFile.exists()) {
             Log.e(TAG, "Config file not found at " + configFile.getAbsolutePath());
