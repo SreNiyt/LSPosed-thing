@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    package="com.example.module"> <!-- Or whatever your namespace is -->
 
     <application
         android:allowBackup="true"
-        android:label="@string/app_name"
-        android:description="@string/xposed_description"
-        android:supportsRtl="true"
-        tools:ignore="AllowBackup,MissingApplicationIcon" />
+        android:label="My Redirect Module"
+        android:supportsRtl="true">
 
+        <!-- THESE THREE TAGS ARE REQUIRED FOR LSPOSED TO DETECT THE MODULE -->
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="Redirects specific file paths for apps." />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="82" />
+
+    </application>
 </manifest>
+
