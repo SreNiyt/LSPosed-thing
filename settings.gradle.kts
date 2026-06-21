@@ -1,8 +1,4 @@
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
-}
-
- pluginManagement {
+pluginManagement {
     repositories {
         gradlePluginPortal()
         google()
