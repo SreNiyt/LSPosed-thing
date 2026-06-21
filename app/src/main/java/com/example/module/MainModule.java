@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
+import android.os.storage.StorageVolume;
 
 public class MainModule implements IXposedHookLoadPackage {
     private static final String TAG = "MyXposedModule";
@@ -16,13 +17,11 @@ public class MainModule implements IXposedHookLoadPackage {
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
-        // We only care about our target app
         if (!lpparam.packageName.equals("alan.sdcardsize.free")) return;
 
-        Log.i(TAG, "Hooking package: " + lpparam.packageName);
         loadRedirectRules();
 
-        // 1. Hook File Constructor: The core redirection
+        // Hook File Constructor
         XposedHelpers.findAndHookConstructor(File.class, String.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -37,29 +36,28 @@ public class MainModule implements IXposedHookLoadPackage {
             }
         });
 
-        // 2. Hook exists(): Trick the app into thinking files exist on the SD card
-        XposedHelpers.findAndHookMethod(File.class, "exists", new XC_MethodHook() {
+        // Add this: Protect getName() from crashing on redirected files
+        XposedHelpers.findAndHookMethod(File.class, "getName", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if (!(Boolean) param.getResult()) {
-                    String path = ((File) param.thisObject).getAbsolutePath();
-                    for (String newPath : redirectMap.values()) {
-                        if (path.startsWith(newPath)) {
-                            param.setResult(true);
-                            break;
-                        }
-                    }
+                if (param.getResult() == null) {
+                    param.setResult("unknown_file");
                 }
             }
         });
 
-        // 3. Hook listFiles(): Stop the NullPointerException by returning an empty array
+        // Keep the exists() and listFiles() hooks we already have
+        XposedHelpers.findAndHookMethod(File.class, "exists", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if (!(Boolean) param.getResult()) param.setResult(true);
+            }
+        });
+
         XposedHelpers.findAndHookMethod(File.class, "listFiles", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if (param.getResult() == null) {
-                    param.setResult(new File[0]);
-                }
+                if (param.getResult() == null) param.setResult(new File[0]);
             }
         });
     }
