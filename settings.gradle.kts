@@ -13,7 +13,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        jcenter()
+        maven { url = uri("https://jcenter.bintray.com") }
     }
 }
 
