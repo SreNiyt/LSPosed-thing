@@ -46,4 +46,5 @@ dependencies {
     compileOnly("de.robv.android.xposed:api:82")
     compileOnly("io.github.libxposed:api:latest.release")
     compileOnly("io.github.lsposed.xposed:api:8.0.0")
+    annotationProcessor("io.github.lsposed.xposed:api:8.0.0")
 }
